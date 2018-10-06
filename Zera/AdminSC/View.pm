@@ -68,9 +68,8 @@ sub display_brands_edit {
 
     }else{
         $values = {
-            date => $self->selectrow_array('SELECT DATE(NOW())'),
             active => 1,
-            photo=>'arreglalo02.jpg',
+            photo  => '',
         };
     }
 

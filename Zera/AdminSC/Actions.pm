@@ -63,7 +63,6 @@ sub do_brands_edit {
     }elsif($self->param('_submit') eq 'Delete'){
         eval {
             my $oldimage = $self->selectrow_hashref("SELECT image FROM sc_brands WHERE brand_id = ?", {}, $self->param('brand_id'));
-            $self->add_msg("info", $oldimage->{image});
             unlink "data/img/$oldimage->{image}" if($oldimage->{image});
             $self->dbh_do("DELETE FROM sc_brands  WHERE brand_id=?",{},
                              $self->param('brand_id'));
@@ -73,6 +72,7 @@ sub do_brands_edit {
             $results->{error} = 1;
             return $results;
         }else{
+            $self->add_msg("info", 'Brand deleted');
             $results->{redirect} = '/AdminSC/Brands';
             $results->{success} = 1;
             return $results;
