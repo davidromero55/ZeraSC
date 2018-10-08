@@ -101,5 +101,50 @@ sub do_brands_edit {
 
 }
 
+sub do_options_edit {
+    my $self = shift;
+    my $results = {};
+
+    $self->param('option_id',0) if($self->param('option_id') eq 'New');
+
+    if($self->param('_submit') eq 'Save'){
+        eval {
+            if(int($self->param('option_id'))){
+                # Update
+                $self->dbh_do(  "UPDATE sc_options SET option=? " .
+                                "WHERE option_id=?",{},
+                                $self->param('option'), $self->param('option_id'));
+            }else{
+                # Insert
+                $self->dbh_do("INSERT INTO sc_options (option) " .
+                                 "VALUES (?)",{},
+                                 $self->param('option'));
+            }
+        };
+        if($@){
+            $self->add_msg('warning','Error '.$@);
+            $results->{error} = 1;
+            return $results;
+        }else{
+            $results->{redirect} = '/AdminSC/Options';
+            $results->{success} = 1;
+            return $results;
+        }
+    }elsif($self->param('_submit') eq 'Delete'){
+        eval {
+            $self->dbh_do("DELETE FROM sc_options WHERE option_id=?",{},
+                             $self->param('option_id'));
+        };
+        if($@){
+            $self->add_msg('warning','Error '.$@);
+            $results->{error} = 1;
+            return $results;
+        }else{
+            $results->{redirect} = '/AdminSC/Options';
+            $results->{success} = 1;
+            return $results;
+        }
+    }
+}
 
 1;
