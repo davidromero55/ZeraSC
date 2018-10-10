@@ -132,8 +132,9 @@ sub do_options_edit {
         }
     }elsif($self->param('_submit') eq 'Delete'){
         eval {
-            $self->dbh_do("DELETE FROM sc_options WHERE option_id=?",{},
-                             $self->param('option_id'));
+            $self->dbh_do(
+                "DELETE FROM sc_options_values WHERE option_id=?",{}, $self->param('option_id'));
+            $self->dbh_do("DELETE FROM sc_options WHERE option_id=?",{}, $self->param('option_id'));
         };
         if($@){
             $self->add_msg('warning','Error '.$@);

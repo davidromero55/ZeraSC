@@ -113,7 +113,7 @@ sub display_options {
     }
     my $list = Zera::List->new($self->{Zera},{
         sql => {
-            select => "o.option_id, o.option",
+            select => "o.option_id, o.option, '' AS edit",
             from =>"sc_options o",
             order_by => "",
             where => $where,
@@ -123,7 +123,6 @@ sub display_options {
         link => {
             key => "option_id",
             hidde_key_col => 1,
-            location => '/AdminSC/OptionsEdit',
             transit_params => {},
         },
         debug => 1,
@@ -131,7 +130,13 @@ sub display_options {
 
     $list->get_data();
     $list->on_off('active');
-    $list->columns_align(['left','left']);
+    $list->columns_align(['left','center']);
+
+    foreach my $row (@{$list->{rs}}){
+        $row->{edit} .= $self->_tag('a',{class=>'mr-3 btn btn-outline-primary btn-sm', href=>'/AdminSC/OptionsEdit/'.$row->{option_id}},'<i class="fas fa-edit"></i>');
+        $row->{edit} .= $self->_tag('a',{class=>'mr-3 btn btn-outline-primary btn-sm', href=>'/AdminSC/OptionDetails/'.$row->{option_id}},'<i class="fas fa-chevron-right"></i>');
+    }
+
 
     my $vars = {
         list => $list->print(),
@@ -198,7 +203,6 @@ sub get_option_form {
     my $self = shift;
     my $values = {};
     my @submit = ("Save");
-    ($self->param('SubView') eq 'New') ? $self->set_title('Add Option') : $self->set_title('Edit Option');
     if($self->param('value_id')){
         $values = $self->selectrow_hashref(
             "SELECT value_id, option_id, option_value FROM sc_options_values WHERE value_id=? AND option_id=?",{},
