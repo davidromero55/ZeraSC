@@ -147,4 +147,53 @@ sub do_options_edit {
     }
 }
 
+sub do_option_details {
+    my $self = shift;
+    my $results = {};
+
+    $self->param('option_id',0) if($self->param('option_id') eq 'New');
+
+    if($self->param('_submit') eq 'Save'){
+        eval {
+            if(int($self->param('value_id'))){
+                # Update
+                $self->dbh_do(
+                    "UPDATE sc_options_values SET option_value=? " .
+                    "WHERE value_id=? AND option_id=?",{},
+                    $self->param('option_value'), $self->param('value_id'),$self->param('option_id'));
+            }else{
+                # Insert
+                $self->dbh_do(
+                    "INSERT INTO sc_options_values (option_id, option_value) " .
+                    "VALUES (?,?)",{},
+                    $self->param('option_id'), $self->param('option_value'));
+            }
+        };
+        if($@){
+            $self->add_msg('warning','Error '.$@);
+            $results->{error} = 1;
+            return $results;
+        }else{
+            $results->{redirect} = '/AdminSC/OptionDetails/' . $self->param('option_id');
+            $results->{success} = 1;
+            return $results;
+        }
+    }elsif($self->param('_submit') eq 'Delete'){
+        eval {
+            $self->dbh_do(
+                "DELETE FROM sc_options_values WHERE value_id=? AND option_id=?",{},
+                $self->param('value_id'), $self->param('option_id'));
+        };
+        if($@){
+            $self->add_msg('warning','Error '.$@);
+            $results->{error} = 1;
+            return $results;
+        }else{
+            $results->{redirect} = '/AdminSC/OptionDetails/' . $self->param('option_id');
+            $results->{success} = 1;
+            return $results;
+        }
+    }
+}
+
 1;
