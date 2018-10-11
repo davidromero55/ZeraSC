@@ -1,0 +1,41 @@
+<h3><% page.title %></h3>
+<% msg %>
+<div class="row">
+  <div class="col-12">
+    <ul class="list-group">
+      <% FOREACH category=categories %>
+      <li class="list-group-item">
+        <div class="row">
+          <div class="col-9">
+            <% category.name %>
+          </div>
+          <div class="col-3 ">
+            <div class="btn-group">
+              <a class="btn btn-link btn-sm" href="/AdminSC/CategoryEdit/<% category.category_id %>">Edit</a>
+              <a class="btn btn-link btn-sm" href="/AdminSC/CategoryChild/<% category.category_id %>">Add child</a>
+            </div>
+          </div>
+        </div>
+      </li>
+      <% IF category.childs.size > 0 %>
+      <% FOREACH child=category.childs %>
+      <li class="list-group-item">
+        <div class="row">
+          <div class="col-1">
+          </div>
+          <div class="col-8">
+            <% child.name %>
+          </div>
+          <div class="col-3">
+            <div class="btn-group">
+              <a class="btn btn-link btn-sm" href="/AdminSC/CategoryChild/<% category.category_id %>?category_id=<% child.category_id %>">Edit</a>
+            </div>
+          </div>
+        </div>
+      </li>
+      <% END %>
+      <% END %>
+      <% END %>
+    </ul>
+  </div>
+</div>

@@ -255,13 +255,144 @@ sub get_options_list {
     foreach my $row (@{$list->{rs}}){
         $row->{edit} = '<i class="fas fa-edit"></i>';
     }
-
     my $vars = {
         list => $list->print(),
     };
 
     return $self->render_template($vars,'options_list');
 
+}
+
+sub display_categories {
+    my $self = shift;
+
+    $self->param('category_id',$self->param('SubView')) if(!($self->param('category_id')));
+    $self->set_add_btn('/AdminSC/CategoryEdit/New', 'Add');
+    $self->add_btn('/AdminSC','Back');
+    $self->set_title('Product Categories');
+
+    my $categories = $self->selectall_arrayref("SELECT category_id, name, sort_order FROM sc_categories WHERE parent_id=0 ORDER BY sort_order",{Slice=>{}});
+
+    foreach my $category (@$categories){
+        $category->{childs} = $self->selectall_arrayref("SELECT category_id, name, sort_order FROM sc_categories WHERE parent_id=? ORDER BY sort_order",
+            {Slice=>{}},$category->{category_id});
+    }
+
+    my $vars = {
+        categories => $categories,
+    };
+    return $self->render_template($vars);
+}
+
+sub display_category_edit {
+    my $self = shift;
+    my $values = {};
+    my @submit = ("Save");
+
+    $self->param('category_id',$self->param('SubView')) if(!($self->param('category_id')));
+    $self->param('parent_id','0') if(!($self->param('parent_id')));
+
+    # Title
+    $self->set_title('Category');
+
+    # Helper buttons
+    $self->add_btn('/AdminSC/Categories','Back');
+
+    # JS
+    $self->add_jsfile('admin-sc');
+
+    # Values
+    if($self->param('category_id') ne 'New'){
+        $values = $self->selectrow_hashref("SELECT *  FROM sc_categories WHERE category_id=?",{},$self->param('category_id'));
+        push(@submit, 'Delete');
+    }else{
+        $values = {
+            active => 1,
+            sort_order => 1,
+        };
+    }
+
+    # Form
+    my $form = $self->form({
+        method   => 'POST',
+        fields   => [qw/category_id parent_id name url description sort_order active image details/],
+        submits  => \@submit,
+        values   => $values,
+    });
+
+    $form->field('category_id',{type=>'hidden'});
+    $form->field('parent_id',{type=>'hidden'});
+    $form->field('name',{span=>'col-md-9', required=>1});
+    $form->field('url',{span=>'col-md-6', required=>1, readonly=>1});
+    $form->field('description',{span=>'col-md-9', required=>1});
+    $form->field('active',{label=>"Active", span=>'col-md-1', check_label=>'Yes / No', class=>"filled-in", type=>"checkbox"});
+    $form->field('image', {type=>'file', accept=>"image/x-png,image/gif,image/jpeg", span=>'col-12'});
+    $form->field('details',{span=>'col-md-12', class=>'wysiwyg'});
+
+    if($values->{image}){
+        $form->field('image',{span=>'col-md-12', help=>$self->_tag('img',{src=>'/data/category_thumb/'.$values->{image}}) });
+        push(@submit, 'Delete Image');
+        $form->submit('Delete Image',{class=>'btn btn-danger'});
+    }
+
+    return $form->render();
+}
+
+sub display_category_child {
+    my $self = shift;
+    my $values = {};
+    my @submit = ("Save");
+
+    $self->param('parent_id',$self->param('SubView')) if(!($self->param('parent_id')));
+    $self->param('category_id','0') if(!($self->param('category_id')));
+    my $parent = $self->selectrow_hashref("SELECT category_id, name FROM sc_categories WHERE category_id=?",{},
+        $self->param('parent_id'));
+
+    # Title
+    $self->set_title('Category Child for: ' . $parent->{name});
+
+    # Helper buttons
+    $self->add_btn('/AdminSC/Categories','Back');
+
+    # JS
+    $self->add_jsfile('admin-sc');
+
+    # Values
+    if($self->param('category_id')){
+        $values = $self->selectrow_hashref("SELECT * FROM sc_categories WHERE category_id=?",{},$self->param('category_id'));
+        push(@submit, 'Delete');
+    }else{
+        $values = {
+            parent_id => $self->param('parent_id'),
+            sort_order => 1,
+            active => 1,
+        };
+    }
+
+    # Form
+    my $form = $self->form({
+        method   => 'POST',
+        fields   => [qw/category_id parent_id name url description sort_order active image details/],
+        submits  => \@submit,
+        values   => $values,
+    });
+
+    $form->field('category_id',{type=>'hidden'});
+    $form->field('parent_id',{type=>'hidden'});
+    $form->field('name',{span=>'col-md-9', required=>1});
+    $form->field('url',{span=>'col-md-6', required=>1, readonly=>1});
+    $form->field('description',{span=>'col-md-9', required=>1});
+    $form->field('active',{label=>"Active", span=>'col-md-1', check_label=>'Yes / No', class=>"filled-in", type=>"checkbox"});
+    $form->field('image', {type=>'file', accept=>"image/x-png,image/gif,image/jpeg", span=>'col-12'});
+    $form->field('details',{span=>'col-md-12', class=>'wysiwyg'});
+
+    if($values->{image}){
+        $form->field('image',{span=>'col-md-12', help=>$self->_tag('img',{src=>'/data/category_thumb/'.$values->{image}}) });
+        push(@submit, 'Delete Image');
+        $form->submit('Delete Image',{class=>'btn btn-danger'});
+    }
+
+    return $form->render();
 }
 
 1;

@@ -24,12 +24,7 @@ sub do_brands_edit {
             }
         }
 
-        my $display_options = {};
         my $image = $self->upload_file('image', 'img');
-        if($image){
-            $display_options->{image} = '/data/img/'.$image;
-        }
-
         eval {
             if(int($self->param('brand_id'))){
                 # Update
@@ -95,10 +90,7 @@ sub do_brands_edit {
             $results->{success} = 1;
             return $results;
         }
-
     }
-
-
 }
 
 sub do_options_edit {
@@ -191,6 +183,190 @@ sub do_option_details {
             return $results;
         }else{
             $results->{redirect} = '/AdminSC/OptionDetails/' . $self->param('option_id');
+            $results->{success} = 1;
+            return $results;
+        }
+    }
+}
+
+sub do_category_edit {
+    my $self = shift;
+    my $results = {};
+
+    $self->param('category_id',0) if($self->param('category_id') eq 'New');
+
+    if($self->param('_submit') eq 'Save'){
+        # Prevent duplicated urls
+        my $exist = $self->selectrow_array(
+            "SELECT COUNT(*) FROM sc_categories WHERE url=? AND category_id<>?",{},$self->param('url'), int($self->param('category_id'))) || 0;
+        if($exist){
+            my $base_name = $self->param('url');
+            for (my $i = 1; $i < 1000; $i++){
+                $self->param('url',$base_name . '-'.$i);
+                $exist = $self->selectrow_array(
+                    "SELECT COUNT(*) FROM sc_categories WHERE url=? AND category_id<>?",{},$self->param('url'), int($self->param('category_id'))) || 0;
+                last if ($exist == 0);
+            }
+        }
+
+        my $image = $self->upload_file('image', 'category');
+        if($image){
+            # Generate Thumbnail
+            $self->create_thumbnail('category/'.$image, 'category_thumb/'.$image,'300x300');
+        }
+        eval {
+            if(int($self->param('category_id'))){
+                $self->dbh_do("UPDATE sc_categories SET name=?, url=?, active=?, description=?, sort_order=?, details=? " .
+                    "WHERE category_id=?",{},
+                    $self->param('name'), $self->param('url'), int($self->param('active')), $self->param('description'),
+                    $self->param('sort_order'), $self->param('details'), $self->param('category_id'));
+               if($image){
+                 my $oldimage = $self->selectrow_hashref("SELECT image FROM sc_categories WHERE category_id = ?", {}, $self->param('category_id'));
+                 unlink "data/category/$oldimage->{image}" if($oldimage->{image});
+                 unlink "data/category_thumb/$oldimage->{image}" if($oldimage->{image});
+                 $self->dbh_do("UPDATE sc_categories SET image=? WHERE category_id=?",{},
+                    $image, $self->param('category_id'));
+               }
+            }else{
+                # Insert
+                $self->dbh_do("INSERT INTO sc_categories (parent_id, name, url, image, active, description, sort_order, details) " .
+                    "VALUES (?,?,?,?,?,?,?,?)",{},
+                    $self->param('parent_id'), $self->param('name'), $self->param('url'), $image, int($self->param('active')),
+                    $self->param('description'), $self->param('sort_order'), $self->param('details'));
+            }
+        };
+        if($@){
+            $self->add_msg('warning','Error '.$@);
+            $results->{error} = 1;
+            return $results;
+        }else{
+            $results->{redirect} = '/AdminSC/Categories';
+            $results->{success} = 1;
+            return $results;
+        }
+    }elsif($self->param('_submit') eq 'Delete'){
+        eval {
+            my $oldimage = $self->selectrow_hashref("SELECT image FROM sc_categories WHERE category_id = ?", {},
+                $self->param('category_id'));
+                unlink "data/category/$oldimage->{image}" if($oldimage->{image});
+                unlink "data/category_thumb/$oldimage->{image}" if($oldimage->{image});
+            $self->dbh_do("DELETE FROM sc_categories  WHERE category_id=?",{}, $self->param('category_id'));
+        };
+        if($@){
+            $self->add_msg('warning','Error '.$@);
+            $results->{error} = 1;
+            return $results;
+        }else{
+            $self->add_msg("info", 'Category deleted');
+            $results->{redirect} = '/AdminSC/Categories';
+            $results->{success} = 1;
+            return $results;
+        }
+    }elsif($self->param('_submit') eq 'Delete Image'){
+        eval {
+            my $oldimage = $self->selectrow_hashref("SELECT image FROM sc_categories WHERE category_id = ?", {}, $self->param('category_id'));
+            unlink "data/category/$oldimage->{image}" if($oldimage->{image});
+            unlink "data/category_thumb/$oldimage->{image}" if($oldimage->{image});
+            $self->dbh_do("UPDATE sc_categories  SET image='' WHERE category_id=?",{}, $self->param('category_id'));
+        };
+        if($@){
+            $self->add_msg('warning','Error '.$@);
+            $results->{error} = 1;
+            return $results;
+        }else{
+            $results->{redirect} = '/AdminSC/CategoryEdit/'.$self->param('category_id');
+            $results->{success} = 1;
+            return $results;
+        }
+    }
+}
+
+sub do_category_child {
+    my $self = shift;
+    my $results = {};
+
+    $self->param('category_id',0) if(!$self->param('category_id'));
+
+    if($self->param('_submit') eq 'Save'){
+        # Prevent duplicated urls
+        my $exist = $self->selectrow_array(
+            "SELECT COUNT(*) FROM sc_categories WHERE url=? AND category_id<>?",{},$self->param('url'), int($self->param('category_id'))) || 0;
+        if($exist){
+            my $base_name = $self->param('url');
+            for (my $i = 1; $i < 1000; $i++){
+                $self->param('url',$base_name . '-'.$i);
+                $exist = $self->selectrow_array(
+                    "SELECT COUNT(*) FROM sc_categories WHERE url=? AND category_id<>?",{},$self->param('url'), int($self->param('category_id'))) || 0;
+                last if ($exist == 0);
+            }
+        }
+
+        my $image = $self->upload_file('image', 'category');
+        if($image){
+            # Generate Thumbnail
+            $self->create_thumbnail('category/'.$image, 'category_thumb/'.$image,'300x300');
+        }
+        eval {
+            if(int($self->param('category_id'))){
+                $self->dbh_do("UPDATE sc_categories SET name=?, url=?, active=?, description=?, sort_order=?, details=? " .
+                    "WHERE category_id=?",{},
+                    $self->param('name'), $self->param('url'), int($self->param('active')), $self->param('description'),
+                    $self->param('sort_order'), $self->param('details'), $self->param('category_id'));
+               if($image){
+                 my $oldimage = $self->selectrow_hashref("SELECT image FROM sc_categories WHERE category_id = ?", {}, $self->param('category_id'));
+                 unlink "data/category/$oldimage->{image}" if($oldimage->{image});
+                 unlink "data/category_thumb/$oldimage->{image}" if($oldimage->{image});
+                 $self->dbh_do("UPDATE sc_categories SET image=? WHERE category_id=?",{},
+                    $image, $self->param('category_id'));
+               }
+            }else{
+                # Insert
+                $self->dbh_do("INSERT INTO sc_categories (parent_id, name, url, image, active, description, sort_order, details) " .
+                    "VALUES (?,?,?,?,?,?,?,?)",{},
+                    $self->param('parent_id'), $self->param('name'), $self->param('url'), $image, int($self->param('active')),
+                    $self->param('description'), $self->param('sort_order'), $self->param('details'));
+            }
+        };
+        if($@){
+            $self->add_msg('warning','Error '.$@);
+            $results->{error} = 1;
+            return $results;
+        }else{
+            $results->{redirect} = '/AdminSC/Categories';
+            $results->{success} = 1;
+            return $results;
+        }
+    }elsif($self->param('_submit') eq 'Delete'){
+        eval {
+            my $oldimage = $self->selectrow_hashref("SELECT image FROM sc_categories WHERE category_id = ?", {},
+                $self->param('category_id'));
+                unlink "data/category/$oldimage->{image}" if($oldimage->{image});
+                unlink "data/category_thumb/$oldimage->{image}" if($oldimage->{image});
+            $self->dbh_do("DELETE FROM sc_categories  WHERE category_id=?",{}, $self->param('category_id'));
+        };
+        if($@){
+            $self->add_msg('warning','Error '.$@);
+            $results->{error} = 1;
+            return $results;
+        }else{
+            $self->add_msg("info", 'Category deleted');
+            $results->{redirect} = '/AdminSC/Categories';
+            $results->{success} = 1;
+            return $results;
+        }
+    }elsif($self->param('_submit') eq 'Delete Image'){
+        eval {
+            my $oldimage = $self->selectrow_hashref("SELECT image FROM sc_categories WHERE category_id = ?", {}, $self->param('category_id'));
+            unlink "data/category/$oldimage->{image}" if($oldimage->{image});
+            unlink "data/category_thumb/$oldimage->{image}" if($oldimage->{image});
+            $self->dbh_do("UPDATE sc_categories  SET image='' WHERE category_id=?",{}, $self->param('category_id'));
+        };
+        if($@){
+            $self->add_msg('warning','Error '.$@);
+            $results->{error} = 1;
+            return $results;
+        }else{
+            $results->{redirect} = '/AdminSC/CategoryEdit/'.$self->param('category_id');
             $results->{success} = 1;
             return $results;
         }
