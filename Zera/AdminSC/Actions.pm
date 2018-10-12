@@ -431,4 +431,34 @@ sub do_products_edit {
     }
 }
 
+sub do_products_categories {
+    my $self = shift;
+    my $results = {};
+
+    if($self->param('_submit') eq 'Save'){
+        eval {
+            # Delete all relations
+            $self->dbh_do("DELETE FROM sc_products_to_categories WHERE product_id=?",{},$self->param('product_id'));
+
+            # Create selected relations
+            my $categories = $self->selectall_arrayref("SELECT category_id FROM sc_categories",{Slice=>{}});
+            foreach my $category (@$categories) {
+                if($self->param('cat_' . $category->{category_id})){
+                    $self->dbh_do("INSERT INTO sc_products_to_categories (product_id, category_id) VALUES (?,?) ",{},
+                        $self->param('product_id'), $category->{category_id});
+                }
+            }
+        };
+        if($@){
+            $self->add_msg('warning','Error '.$@);
+            $results->{error} = 1;
+            return $results;
+        }else{
+            $results->{redirect} = '/AdminSC/ProductsEdit/'.$self->param('product_id');
+            $results->{success} = 1;
+            return $results;
+        }
+    }
+}
+
 1;

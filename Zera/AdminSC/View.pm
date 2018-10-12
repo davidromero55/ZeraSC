@@ -433,30 +433,29 @@ sub display_products_edit {
 
     $self->param('product_id',$self->param('SubView')) if(!($self->param('product_id')));
 
-    # Title
-    ($self->param('product_id')) ? $self->set_title('Edit Product') : $self->set_title('Add Product');
-
     # Helper buttons
     $self->add_btn('/AdminSC/Products','Back');
 
     if($self->param('product_id')) {
         $values = $self->selectrow_hashref(
-            "SELECT p.code, p.name, p.keywords, p.image, p.option_id, p.brand_id, p.active FROM sc_products p WHERE p.product_id=?",{},
+            "SELECT p.product_id, p.code, p.name, p.keywords, p.image, p.option_id, p.brand_id, p.active FROM sc_products p WHERE p.product_id=?",{},
             $self->param('product_id'));
         push(@submit, 'Delete');
+        $self->set_title('Edit Product: '.$values->{name});
     }else{
         $values = {
             active => 1,
         };
+        $self->set_title('Add Product');
     }
 
     # Form
     my $form = $self->form({
         method   => 'POST',
-        fields   => [qw/code name keywords image option_id brand_id active/],
+        fields   => [qw/product_id code name keywords image option_id brand_id active/],
         submits  => \@submit,
         values   => $values,
-#        template => 'display_product',
+        template => 'display_products_edit_form',
     });
     my %options = $self->selectbox_data("SELECT option_id, option FROM sc_options");
     my %brands = $self->selectbox_data("SELECT brand_id, name FROM sc_brands order by name");
@@ -475,7 +474,65 @@ sub display_products_edit {
 
     $form->submit('Delete',{class=>'btn btn-danger'});
 
-    return $form->render();
+    return $form->render({
+        product_id => $self->param('product_id')
+    });
+}
+
+sub display_products_categories {
+    my $self = shift;
+    my $values = {};
+    my @submit = ("Save");
+    my @fields =  ("product_id");
+
+    $self->param('product_id',$self->param('SubView')) if(!($self->param('product_id')));
+
+    # Helper buttons
+    $self->add_btn('/AdminSC/Products','Back');
+    $values = $self->selectrow_hashref(
+        "SELECT p.product_id, p.code, p.name, p.keywords, p.image, p.option_id, p.brand_id, p.active FROM sc_products p WHERE p.product_id=?",{},
+        $self->param('product_id'));
+    $self->set_title('Categories for: '.$values->{name});
+
+    my $categories = $self->selectall_arrayref(
+        "SELECT c.category_id, c.name, c.sort_order, IFNULL(pc.category_id,0) AS checked " .
+        "FROM sc_categories c " .
+        "LEFT JOIN sc_products_to_categories pc ON pc.category_id=c.category_id AND pc.product_id=? " .
+        "WHERE c.parent_id=0 ORDER BY c.sort_order",{Slice=>{}}, $self->param('product_id'));
+    foreach my $category (@$categories){
+        $values->{'cat_' . $category->{category_id}} = $category->{checked};
+        push(@fields,'cat_' . $category->{category_id});
+        $category->{childs} = $self->selectall_arrayref(
+            "SELECT c.category_id, c.name, c.sort_order, IFNULL(pc.category_id,0) AS checked ".
+            "FROM sc_categories c " .
+            "LEFT JOIN sc_products_to_categories pc ON pc.category_id=c.category_id AND pc.product_id=? " .
+            "WHERE parent_id=? ORDER BY sort_order",
+            {Slice=>{}}, $self->param('product_id'), $category->{category_id});
+        foreach my $child (@{$category->{childs}}){
+            push(@fields,'cat_' . $child->{category_id});
+            $values->{'cat_' . $child->{category_id}} = $child->{checked};
+        }
+    }
+
+    # Form
+    my $form = $self->form({
+        method   => 'POST',
+        fields   => \@fields,
+        submits  => \@submit,
+        values   => $values,
+        template => 'display_products_categories_form',
+    });
+    $form->field('product_id',{type=>'hidden'});
+    foreach my $category (@$categories){
+        $form->field('cat_' . $category->{category_id},{type=>'checkbox', label =>$category->{name}, span=>'col-11 offset-0'});
+        foreach my $child (@{$category->{childs}}){
+            $form->field('cat_' . $child->{category_id},{type=>'checkbox', label =>$child->{name}, span=>'col-10 offset-1'});
+        }
+    }
+
+    return $form->render({
+        product_id => $self->param('product_id'),
+    });
 }
 
 1;
