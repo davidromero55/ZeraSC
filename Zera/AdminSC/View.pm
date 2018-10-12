@@ -41,11 +41,7 @@ sub display_brands {
     $list->on_off('active');
     $list->columns_align(['left','center']);
 
-    my $vars = {
-        list => $list->print(),
-    };
-
-    return $self->render_template($vars);
+    return $list->render();
 }
 
 sub display_brands_edit {
@@ -137,12 +133,7 @@ sub display_options {
         $row->{edit} .= $self->_tag('a',{class=>'mr-3 btn btn-outline-primary btn-sm', href=>'/AdminSC/OptionDetails/'.$row->{option_id}},'<i class="fas fa-chevron-right"></i>');
     }
 
-
-    my $vars = {
-        list => $list->print(),
-    };
-
-    return $self->render_template($vars);
+    return $list->render();
 }
 
 sub display_options_edit {
@@ -391,6 +382,98 @@ sub display_category_child {
         push(@submit, 'Delete Image');
         $form->submit('Delete Image',{class=>'btn btn-danger'});
     }
+
+    return $form->render();
+}
+
+sub display_products {
+    my $self = shift;
+
+    $self->set_title('Products');
+    $self->add_search_box();
+    $self->set_add_btn('/AdminSC/ProductsEdit', 'Add');
+
+    # Helper buttons
+    $self->add_btn('/AdminSC','Back');
+
+    my $where;
+    my @params;
+    if($self->param('zl_q')){
+        $where .= " name LIKE ? ";
+        push(@params,'%' . $self->param('zl_q') .'%');
+    }
+    my $list = Zera::List->new($self->{Zera},{
+        sql => {
+            select => "product_id, code, name, active",
+            from =>"sc_products p",
+            order_by => "p.active DESC, 3",
+            where => $where,
+            params => \@params,
+            limit => "30",
+        },
+        link => {
+            key => "product_id",
+            hidde_key_col => 1,
+            location => '/AdminSC/ProductsEdit',
+            transit_params => {},
+        },
+    });
+
+    $list->get_data();
+    $list->on_off('active');
+    $list->columns_align(['left','left','center']);
+
+    return $list->render();
+}
+
+sub display_products_edit {
+    my $self = shift;
+    my $values = {};
+    my @submit = ("Save");
+
+    $self->param('product_id',$self->param('SubView')) if(!($self->param('product_id')));
+
+    # Title
+    ($self->param('product_id')) ? $self->set_title('Edit Product') : $self->set_title('Add Product');
+
+    # Helper buttons
+    $self->add_btn('/AdminSC/Products','Back');
+
+    if($self->param('product_id')) {
+        $values = $self->selectrow_hashref(
+            "SELECT p.code, p.name, p.keywords, p.image, p.option_id, p.brand_id, p.active FROM sc_products p WHERE p.product_id=?",{},
+            $self->param('product_id'));
+        push(@submit, 'Delete');
+    }else{
+        $values = {
+            active => 1,
+        };
+    }
+
+    # Form
+    my $form = $self->form({
+        method   => 'POST',
+        fields   => [qw/code name keywords image option_id brand_id active/],
+        submits  => \@submit,
+        values   => $values,
+#        template => 'display_product',
+    });
+    my %options = $self->selectbox_data("SELECT option_id, option FROM sc_options");
+    my %brands = $self->selectbox_data("SELECT brand_id, name FROM sc_brands order by name");
+    $form->field('product_id',{type=>'hidden'});
+    $form->field('code',{span=>'col-md-4', required=>1});
+    $form->field('name',{span=>'col-md-8', required=>1});
+    $form->field('keywords',{span=>'col-6'});
+    $form->field('image', {type=>'file', accept=>"image/x-png,image/gif,image/jpeg", span=>'col-6'});
+    $form->field('option_id',{placeholder=> 'Option', span=>'col-md-4', label=> 'Options', type=>'select', selectname => 'Select a option', options => $options{values}, labels => $options{labels}, required=>1});
+    $form->field('brand_id' ,{placeholder=> 'Brand', span=>'col-md-4', label=> 'Brands', type=>'select', selectname => 'Select a brand', options => $brands{values}, labels => $brands{labels}, required=>1});
+    $form->field('active',{label=>"Publish", span=>'col-md-4', check_label=>'Yes / No', class=>"filled-in", type=>"checkbox"});
+
+    if($values->{display_options}->{image}){
+        $form->field('image', {help=>$self->get_image_options($values->{display_options}->{image})});
+    }
+
+    $form->submit('Delete',{class=>'btn btn-danger'});
 
     return $form->render();
 }

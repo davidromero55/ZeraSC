@@ -373,4 +373,62 @@ sub do_category_child {
     }
 }
 
+sub do_products_edit {
+    my $self = shift;
+    my $results = {};
+
+    if($self->param('_submit') eq 'Save'){
+        my $image = $self->upload_file('image', 'products');
+        if($image){
+            # Generate Thumbnail
+            $self->create_thumbnail('products/'.$image, 'products_thumb/'.$image,'300x300');
+        }
+
+        eval {
+            if(int($self->param('product_id'))){
+                $self->dbh_do("UPDATE sc_products SET code=?, name=?, keywords=?, active=?, option_id=?, brand_id=? " .
+                    "WHERE product_id=?",{},
+                    $self->param('code'), $self->param('name'), $self->param('keywords'), ($self->param('active') || 0), $self->param('option_id'),
+                    $self->param('brand_id'), $self->param('product_id'));
+               if($image){
+                 my $oldimage = $self->selectrow_hashref("SELECT image FROM sc_products WHERE product_id = ?", {}, $self->param('product_id'));
+                 unlink "data/products/$oldimage->{image}" if($oldimage->{image});
+                 unlink "data/products_thumb/$oldimage->{image}" if($oldimage->{image});
+                 $self->dbh_do("UPDATE sc_products SET image=? WHERE product_id=?",{}, $image, $self->param('product_id'));
+               }
+            }else{
+                $self->dbh_do("INSERT INTO sc_products (code, name, keywords, image, active, option_id, brand_id) " .
+                    "VALUES (?,?,?,?,?,?,?)",{},
+                    $self->param('code'), $self->param('name'), $self->param('keywords'), $image, ($self->param('active') || 0), $self->param('option_id'),
+                    $self->param('brand_id'));
+            }
+        };
+        if($@){
+            $self->add_msg('warning','Error '.$@);
+            $results->{error} = 1;
+            return $results;
+        }else{
+            $results->{redirect} = '/AdminSC/Products';
+            $results->{success} = 1;
+            return $results;
+        }
+    }elsif($self->param('_submit') eq 'Delete'){
+        eval {
+            my $oldimage = $self->selectrow_hashref("SELECT image FROM sc_products WHERE product_id = ?", {}, $self->param('product_id'));
+            unlink "data/products/$oldimage->{image}" if($oldimage->{image});
+            unlink "data/products_thumb/$oldimage->{image}" if($oldimage->{image});
+            $self->dbh_do("DELETE FROM sc_products WHERE product_id=?",{}, $self->param('product_id'));
+        };
+        if($@){
+            $self->add_msg('warning','Error '.$@);
+            $results->{error} = 1;
+            return $results;
+        }else{
+            $results->{redirect} = '/AdminSC/Products';
+            $results->{success} = 1;
+            return $results;
+        }
+    }
+}
+
 1;
