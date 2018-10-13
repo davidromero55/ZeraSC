@@ -1,0 +1,26 @@
+<% msg %>
+<div class="row justify-content-end">
+  <div class="col-12 text-right">
+    <form method="get" action="" class="form-horizontal needs-validation" novalidate="">
+      <div class="input-group input-group-sm  my-1">
+        <input value="<% zl_q %>" id="zl_q" type="text" name="zl_q" placeholder="Search" class="form-control">
+        <div class="input-group-append">
+          <button class="btn btn-secondary" type="submit"><i class="fas fa-search"></i></button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+<table<% FOREACH attr IN table_attrs %> <% attr.key %>="<% attr.value %>"<% END %>>
+    <% IF caption  %><caption><% caption %></caption><% END %>
+    <thead>
+        <% columns %>
+    </thead>
+    <tbody>
+        <% details %>
+    </tbody>
+    <tfoot>
+        <% totals %>
+    </tfoot>
+</table>
+<% pagination %>

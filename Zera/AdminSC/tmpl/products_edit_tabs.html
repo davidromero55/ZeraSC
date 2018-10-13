@@ -6,13 +6,12 @@
     <a class="nav-link<% IF sub_name == 'display_products_categories' %> active<% END %>" href="/AdminSC/ProductsCategories/<% product_id %>">Categories</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link<% IF sub_name == '' %> active<% END %>" href="/AdminSC/ProductsGallery/<% product_id %>">Gallery</a>
+    <a class="nav-link<% IF sub_name == 'display_products_gallery' %> active<% END %>" href="/AdminSC/ProductsGallery/<% product_id %>">Gallery</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link<% IF sub_name == '' %> active<% END %>" href="/AdminSC/ProductsRelated/<% product_id %>">Related items</a>
+    <a class="nav-link<% IF sub_name == 'display_products_related' %> active<% END %>" href="/AdminSC/ProductsRelated/<% product_id %>">Related items</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link<% IF sub_name == '' %> active<% END %>" href="/AdminSC/ProductsComplementary/<% product_id %>">Complementary items</a>
+    <a class="nav-link<% IF sub_name == 'display_products_complementary' %> active<% END %>" href="/AdminSC/ProductsComplementary/<% product_id %>">Complementary items</a>
   </li>
 </ul>
-<% sub_name %>

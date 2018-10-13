@@ -1,0 +1,19 @@
+<h3><% page.title %></h3>
+<% msg %>
+<div class="row  justify-content-center">
+  <div class="col-12 col-sm-8 col-md-12">
+    <div class="card">
+      <% INCLUDE 'Zera/AdminSC/tmpl/products_edit_tabs.html' %>
+      <div class="row mt-4">
+        <div class="col-6">
+          <h4>Related products</h4>
+          <% related_list %>
+        </div>
+        <div class="col-6">
+          <h4>Available products</h4>
+          <% available_list %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

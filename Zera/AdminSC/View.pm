@@ -399,8 +399,8 @@ sub display_products {
     my $where;
     my @params;
     if($self->param('zl_q')){
-        $where .= " name LIKE ? ";
-        push(@params,'%' . $self->param('zl_q') .'%');
+        $where .= " name LIKE ? OR code =? ";
+        push(@params,'%' . $self->param('zl_q') .'%', $self->param('zl_q'));
     }
     my $list = Zera::List->new($self->{Zera},{
         sql => {
@@ -490,8 +490,7 @@ sub display_products_categories {
     # Helper buttons
     $self->add_btn('/AdminSC/Products','Back');
     $values = $self->selectrow_hashref(
-        "SELECT p.product_id, p.code, p.name, p.keywords, p.image, p.option_id, p.brand_id, p.active FROM sc_products p WHERE p.product_id=?",{},
-        $self->param('product_id'));
+        "SELECT p.product_id, p.code, p.name FROM sc_products p WHERE p.product_id=?",{}, $self->param('product_id'));
     $self->set_title('Categories for: '.$values->{name});
 
     my $categories = $self->selectall_arrayref(
@@ -532,6 +531,276 @@ sub display_products_categories {
 
     return $form->render({
         product_id => $self->param('product_id'),
+    });
+}
+
+sub display_products_gallery {
+    my $self = shift;
+
+    $self->param('product_id',$self->param('SubView')) if(!($self->param('product_id')));
+    $self->add_btn('/AdminSC/Products','Back');
+
+    my $product = $self->selectrow_hashref(
+        "SELECT p.product_id, p.code, p.name FROM sc_products p WHERE p.product_id=?",{}, $self->param('product_id'));
+    $self->set_title('Gallery for: '.$product->{name});
+
+    my $vars = {
+        gallery_form  => $self->get_gallery_form(),
+        gallery_list => $self->get_gallery_list(),
+        product_id => $self->param('product_id'),
+    };
+    return $self->render_template($vars);
+}
+
+sub get_gallery_form {
+    my $self = shift;
+    my $product = shift;
+    my @submit = ("Save");
+    my $values = {};
+
+    $self->param('image_id',$self->param('UrlId')) if(!($self->param('image_id')));
+    $self->add_btn('/AdminSC/Products','Back');
+    if($self->param('image_id')){
+        push(@submit,'Delete');
+        $values = $self->selectrow_hashref(
+            "SELECT image_id, image, description, sort_order FROM sc_products_images WHERE image_id=?",{},$self->param('image_id'));
+    }else{
+        $values = {
+            product_id => $self->param('product_id'),
+            sort_order => $self->selectrow_array("SELECT MAX(sort_order) + 1 FROM sc_products_images WHERE product_id=?",{},$self->param('product_id'))
+        };
+    }
+
+    my $form = $self->form({
+        method   => 'POST',
+        fields   => [qw/image_id product_id image description sort_order/],
+        submits  => \@submit,
+        values   => $values,
+        template => 'get_gallery_form',
+    });
+
+    $form->field('product_id',{type=>'hidden'});
+    $form->field('image_id',{type=>'hidden'});
+    $form->field('image',{span=>'col-6', required=>1, type=>'file', placeholder=> 'Select a new image for the product gallery'});
+    $form->field('description',{span=>'col-4'});
+    $form->field('sort_order',{span=>'col-2'});
+    $form->submit('Save',{class=>'btn btn-sm mr-1 btn-primary'});
+    $form->submit('Delete',{class=>'btn btn-danger btn-sm'});
+    if($values->{image}){
+        $form->field('image',{span=>'col-6', required=>1, type=>'text', readonly=>'readonly',
+            help=>$self->_tag('img',{src=>'/data/pg150/'.$values->{image}}) });
+    }
+
+    return $form->render();
+}
+
+sub get_gallery_list {
+    my $self = shift;
+
+    my $list = Zera::List->new($self->{Zera},{
+        pagination => 0,
+        sql => {
+            select => "image_id, image AS preview, description, sort_order, '' AS edit",
+            from =>"sc_products_images",
+            order_by => "sort_order, description",
+            where => "product_id=?",
+            params => [$self->param('product_id')],
+        },
+        link => {
+            key => "image_id",
+            hidde_key_col => 1,
+            location => '/AdminSC/ProductsGallery/'.$self->param('product_id'),
+            transit_params => {},
+        },
+        template => 'zera_base_list'
+    });
+
+    $list->get_data();
+    $list->on_off('active');
+    $list->columns_align(['center','center']);
+
+    foreach my $row (@{$list->{rs}}){
+        $row->{preview} = $self->_tag('img',{src=>'/data/pg150/'.$row->{preview}},'');
+        $row->{edit} = '<i class="fas fa-edit"></i>';
+    }
+
+    return $list->render();
+}
+
+sub display_products_related {
+    my $self = shift;
+
+    $self->param('product_id',$self->param('SubView')) if(!($self->param('product_id')));
+    $self->add_btn('/AdminSC/Products','Back');
+
+    my $product = $self->selectrow_hashref(
+        "SELECT p.product_id, p.code, p.name FROM sc_products p WHERE p.product_id=?",{}, $self->param('product_id'));
+    $self->set_title('Related products for: '.$product->{name});
+#    $self->add_msg('danger','sdfsf');
+    my $vars = {
+        related_list => $self->get_related_list(),
+        available_list => $self->get_related_available_list(),
+        product_id => $self->param('product_id'),
+    };
+    return $self->render_template($vars);
+}
+
+sub get_related_list {
+    my $self = shift;
+
+    my $list = Zera::List->new($self->{Zera},{
+        pagination => 0,
+        sql => {
+            select => "p.product_id, p.code, p.name, p.image, '' AS remove",
+            from =>"sc_related_products rp INNER JOIN sc_products p ON p.product_id=rp.product_related_id",
+            order_by => "code",
+            where => "rp.product_id=?",
+            params => [$self->param('product_id')],
+        },
+        link => {
+            key => "product_id",
+            hidde_key_col => 1,
+        },
+        template => 'zera_base_list'
+    });
+
+    $list->get_data();
+    $list->on_off('active');
+    $list->columns_align(['left','left','center','center']);
+
+    foreach my $row (@{$list->{rs}}){
+        $row->{image} = $self->_tag('img',{src=>'/data/products_thumb/'.$row->{image}},'') if($row->{image});
+        $row->{remove} = $self->_tag('a',{href=> '/AdminSC/ProductsRelated/'.$self->param('product_id').'?_Action=RemoveRelated&id='.$row->{product_id}.'&zl_q='.$self->param('zl_q')},'<i class="fas fa-chevron-circle-right"></i>');
+    }
+
+    return $list->render();
+}
+
+sub get_related_available_list {
+    my $self = shift;
+    my $WHERE = "p.product_id NOT IN (SELECT rp.product_related_id FROM sc_related_products rp WHERE rp.product_id=?)";
+    my @params = [$self->param('product_id')];
+    if($self->param('zl_q')){
+        $WHERE = " (p.code LIKE ? OR p.name LIKE ?) AND p.product_id NOT IN (SELECT rp.product_related_id FROM sc_related_products rp WHERE rp.product_id=?)";
+#        push(@params, '%'.$self->param('zl_q').'%', '%'.$self->param('zl_q').'%');
+        @params = ['%'.$self->param('zl_q').'%', '%'.$self->param('zl_q'). '%',$self->param('product_id')];
+    }
+    my $list = Zera::List->new($self->{Zera},{
+        pagination => 0,
+        sql => {
+            select => " '' AS 'add', p.product_id, p.code, p.name, p.image ",
+            from =>"sc_products p",
+            order_by => "code",
+            where => $WHERE,
+            params => @params,
+            limit =>30
+        },
+        link => {
+            key => "product_id",
+            hidde_key_col => 1,
+        },
+        template => 'get_available_list'
+    });
+
+    $list->get_data();
+    $list->on_off('active');
+    $list->columns_align(['center','left','left','center']);
+
+    foreach my $row (@{$list->{rs}}){
+        $row->{image} = $self->_tag('img',{src=>'/data/products_thumb/'.$row->{image}},'') if($row->{image});
+        $row->{add} = $self->_tag('a',{href=> '/AdminSC/ProductsRelated/'.$self->param('product_id').'?_Action=AddRelated&id='.$row->{product_id}.'&zl_q='.$self->param('zl_q')},'<i class="fas fa-chevron-circle-left"></i>');
+    }
+
+    return $list->render({
+        zl_q => $self->param('zl_q'),
+    });
+}
+
+sub display_products_complementary {
+    my $self = shift;
+
+    $self->param('product_id',$self->param('SubView')) if(!($self->param('product_id')));
+    $self->add_btn('/AdminSC/Products','Back');
+
+    my $product = $self->selectrow_hashref(
+        "SELECT p.product_id, p.code, p.name FROM sc_products p WHERE p.product_id=?",{}, $self->param('product_id'));
+    $self->set_title('Complementary products for: '.$product->{name});
+    my $vars = {
+        complementary_list => $self->get_complementary_list(),
+        available_list => $self->get_complementary_available_list(),
+        product_id => $self->param('product_id'),
+    };
+    return $self->render_template($vars);
+}
+
+sub get_complementary_list {
+    my $self = shift;
+
+    my $list = Zera::List->new($self->{Zera},{
+        pagination => 0,
+        sql => {
+            select => "p.product_id, p.code, p.name, p.image, '' AS remove",
+            from =>"sc_complementary_products rp INNER JOIN sc_products p ON p.product_id=rp.product_complementary_id",
+            order_by => "code",
+            where => "rp.product_id=?",
+            params => [$self->param('product_id')],
+        },
+        link => {
+            key => "product_id",
+            hidde_key_col => 1,
+        },
+        template => 'zera_base_list'
+    });
+
+    $list->get_data();
+    $list->on_off('active');
+    $list->columns_align(['left','left','center','center']);
+
+    foreach my $row (@{$list->{rs}}){
+        $row->{image} = $self->_tag('img',{src=>'/data/products_thumb/'.$row->{image}},'') if($row->{image});
+        $row->{remove} = $self->_tag('a',{href=> '/AdminSC/ProductsComplementary/'.$self->param('product_id').'?_Action=RemoveComplementary&id='.$row->{product_id}.'&zl_q='.$self->param('zl_q')},'<i class="fas fa-chevron-circle-right"></i>');
+    }
+
+    return $list->render();
+}
+
+sub get_complementary_available_list {
+    my $self = shift;
+    my $WHERE = "p.product_id NOT IN (SELECT rp.product_complementary_id FROM sc_complementary_products rp WHERE rp.product_id=?)";
+    my @params = [$self->param('product_id')];
+    if($self->param('zl_q')){
+        $WHERE = " (p.code LIKE ? OR p.name LIKE ?) AND p.product_id NOT IN (SELECT rp.product_complementary_id FROM sc_complementary_products rp WHERE rp.product_id=?)";
+#        push(@params, '%'.$self->param('zl_q').'%', '%'.$self->param('zl_q').'%');
+        @params = ['%'.$self->param('zl_q').'%', '%'.$self->param('zl_q'). '%',$self->param('product_id')];
+    }
+    my $list = Zera::List->new($self->{Zera},{
+        pagination => 0,
+        sql => {
+            select => " '' AS 'add', p.product_id, p.code, p.name, p.image ",
+            from =>"sc_products p",
+            order_by => "code",
+            where => $WHERE,
+            params => @params,
+            limit =>30
+        },
+        link => {
+            key => "product_id",
+            hidde_key_col => 1,
+        },
+        template => 'get_available_list'
+    });
+
+    $list->get_data();
+    $list->on_off('active');
+    $list->columns_align(['center','left','left','center']);
+
+    foreach my $row (@{$list->{rs}}){
+        $row->{image} = $self->_tag('img',{src=>'/data/products_thumb/'.$row->{image}},'') if($row->{image});
+        $row->{add} = $self->_tag('a',{href=> '/AdminSC/ProductsComplementary/'.$self->param('product_id').'?_Action=AddComplementary&id='.$row->{product_id}.'&zl_q='.$self->param('zl_q')},'<i class="fas fa-chevron-circle-left"></i>');
+    }
+
+    return $list->render({
+        zl_q => $self->param('zl_q'),
     });
 }
 

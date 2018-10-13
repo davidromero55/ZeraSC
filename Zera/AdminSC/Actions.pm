@@ -461,4 +461,153 @@ sub do_products_categories {
     }
 }
 
+sub do_products_gallery {
+    my $self = shift;
+    my $results = {};
+
+    if($self->param('_submit') eq 'Save'){
+        eval {
+            if(!(int($self->param('image_id')))){
+                my $image = $self->upload_file('image', 'pg');
+                if($image){
+                    # Generate Thumbnails
+                    $self->create_thumbnail('pg/'.$image, 'pg/'.$image,'1200x1200');
+                    $self->create_thumbnail('pg/'.$image, 'pg600/'.$image,'600x600');
+                    $self->create_thumbnail('pg/'.$image, 'pg300/'.$image,'300x300');
+                    $self->create_thumbnail('pg/'.$image, 'pg150/'.$image,'150x150');
+                }else{
+                    $self->add_msg('warning','Please choose a image for the product gallery');
+                    $results->{error} = 1;
+                    return $results;
+                }
+                $self->dbh_do("INSERT INTO sc_products_images (product_id, image, description, sort_order) VALUES (?,?,?,?) ",{},
+                    $self->param('product_id'), $image, $self->param('description'), $self->param('sort_order'));
+            }else{
+                $self->dbh_do("UPDATE sc_products_images SET description=?, sort_order=? WHERE image_id=? ",{},
+                    $self->param('description'), $self->param('sort_order'), $self->param('image_id'));
+            }
+        };
+        if($@){
+            $self->add_msg('warning','Error '.$@);
+            $results->{error} = 1;
+            return $results;
+        }else{
+            $results->{redirect} = '/AdminSC/ProductsGallery/'.$self->param('product_id');
+            $results->{success} = 1;
+            return $results;
+        }
+    }elsif($self->param('_submit') eq 'Delete'){
+        eval {
+            my $oldimage = $self->selectrow_hashref("SELECT image FROM sc_products_images WHERE image_id= ?", {},
+                $self->param('image_id'));
+                unlink "data/pg/$oldimage->{image}" if($oldimage->{image});
+                unlink "data/pg600/$oldimage->{image}" if($oldimage->{image});
+                unlink "data/pg300/$oldimage->{image}" if($oldimage->{image});
+                unlink "data/pg150/$oldimage->{image}" if($oldimage->{image});
+            $self->dbh_do("DELETE FROM sc_products_images WHERE image_id=?",{}, $self->param('image_id'));
+        };
+        if($@){
+            $self->add_msg('warning','Error '.$@);
+            $results->{error} = 1;
+            return $results;
+        }else{
+            $results->{redirect} = '/AdminSC/ProductsGallery/'. $self->param('product_id');
+            $results->{success} = 1;
+            return $results;
+        }
+    }
+}
+
+sub do_add_related {
+    my $self = shift;
+    my $results = {};
+
+    $self->param('product_id',$self->param('SubView')) if(!($self->param('product_id')));
+
+    eval {
+        $self->dbh_do("INSERT IGNORE INTO sc_related_products (product_id, product_related_id) VALUES (?,?) ",{},
+            $self->param('product_id'), $self->param('id'));
+        $self->dbh_do("INSERT IGNORE INTO sc_related_products (product_id, product_related_id) VALUES (?,?) ",{},
+            $self->param('id'), $self->param('product_id'));
+    };
+    if($@){
+        $self->add_msg('warning','Error '.$@);
+        $results->{error} = 1;
+        return $results;
+    }else{
+        $results->{redirect} = '/AdminSC/ProductsRelated/'.$self->param('product_id') . '?zl_q='.$self->param('zl_q');
+        $results->{success} = 1;
+        return $results;
+    }
+}
+
+sub do_remove_related {
+    my $self = shift;
+    my $results = {};
+
+    $self->param('product_id',$self->param('SubView')) if(!($self->param('product_id')));
+
+    eval {
+        $self->dbh_do("DELETE FROM sc_related_products WHERE product_id=? AND product_related_id=? ",{},
+            $self->param('product_id'), $self->param('id'));
+        $self->dbh_do("DELETE FROM sc_related_products WHERE product_id=? AND product_related_id=? ",{},
+            $self->param('id'), $self->param('product_id'));
+    };
+    if($@){
+        $self->add_msg('warning','Error '.$@);
+        $results->{error} = 1;
+        return $results;
+    }else{
+        $results->{redirect} = '/AdminSC/ProductsRelated/'.$self->param('product_id') . '?zl_q='.$self->param('zl_q');
+        $results->{success} = 1;
+        return $results;
+    }
+}
+
+sub do_add_complementary {
+    my $self = shift;
+    my $results = {};
+
+    $self->param('product_id',$self->param('SubView')) if(!($self->param('product_id')));
+
+    eval {
+        $self->dbh_do("INSERT IGNORE INTO sc_complementary_products (product_id, product_complementary_id) VALUES (?,?) ",{},
+            $self->param('product_id'), $self->param('id'));
+        $self->dbh_do("INSERT IGNORE INTO sc_complementary_products (product_id, product_complementary_id) VALUES (?,?) ",{},
+            $self->param('id'), $self->param('product_id'));
+    };
+    if($@){
+        $self->add_msg('warning','Error '.$@);
+        $results->{error} = 1;
+        return $results;
+    }else{
+        $results->{redirect} = '/AdminSC/ProductsComplementary/'.$self->param('product_id') . '?zl_q='.$self->param('zl_q');
+        $results->{success} = 1;
+        return $results;
+    }
+}
+
+sub do_remove_complementary {
+    my $self = shift;
+    my $results = {};
+
+    $self->param('product_id',$self->param('SubView')) if(!($self->param('product_id')));
+
+    eval {
+        $self->dbh_do("DELETE FROM sc_complementary_products WHERE product_id=? AND product_complementary_id=? ",{},
+            $self->param('product_id'), $self->param('id'));
+        $self->dbh_do("DELETE FROM sc_complementary_products WHERE product_id=? AND product_complementary_id=? ",{},
+            $self->param('id'), $self->param('product_id'));
+    };
+    if($@){
+        $self->add_msg('warning','Error '.$@);
+        $results->{error} = 1;
+        return $results;
+    }else{
+        $results->{redirect} = '/AdminSC/ProductsComplementary/'.$self->param('product_id') . '?zl_q='.$self->param('zl_q');
+        $results->{success} = 1;
+        return $results;
+    }
+}
+
 1;
