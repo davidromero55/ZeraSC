@@ -1,0 +1,167 @@
+<style>
+
+.image-container {
+	display: inline-block;
+	padding: 1em;
+	max-width: 100%;
+	min-width: 100%;
+	vertical-align: top;
+	width: -webkit-fit-content;
+	width: -moz-fit-content;
+	width: fit-content;
+}
+
+.image-container:hover {
+	background-color: transparent;
+}
+
+.image {
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: contain;
+	display: block;
+	max-width: 100%;
+	min-width: 100%;
+	padding-bottom: 10em;
+}
+</style>
+<div class="container">
+	<div class="row">
+		<div class="col-12 maximo inactivo justify-content-center" id="maximo" onclick="maximizar()">
+				<div class="imagen" id="imagen" style="background-image: none;"></div>
+		</div>
+		<% FOREACH product = products %>
+		<div class="col-12 py-5 my-5">
+			<div class="row">
+				<div class="col-lg-6 col-12">
+					<div class="row">
+						<div class="col-12">
+							<div class="icono_zoom" onclick="maximizar()"> <i class="fas fa-search centrado-porcentual"></i> </div>
+							<div class="image-container">
+								<div class="image detail-view" id="img_zoom" style="background-image: url(/data/img/<% product.image %>);"></div>
+							</div>
+						</div>
+						<div class="col-12">
+							<div id="carouselExample" class="carousel slide" data-ride="carousel" data-interval="9000">
+								<div class="carousel-inner row w-75 mx-auto" role="listbox">
+									<% FOREACH prin = principal %>
+									<div class="carousel-item col-md-3  active" onclick="cambiaimagen('<% prin.image %>')">
+										<div class="panel panel-default">
+											<div class="panel-thumbnail" >
+												<img class="img-fluid mx-auto d-block" src="/data/img/<% prin.image %>" alt="slide 1">
+											</div>
+										</div>
+									</div>
+									<% END %>
+									<% FOREACH imagen = imagenes %>
+									<div class="carousel-item col-md-3" onclick="cambiaimagen('<% imagen.image %>')">
+										<div class="panel panel-default">
+											<div class="panel-thumbnail" >
+												<img class="img-fluid mx-auto d-block" src="/data/img/<% imagen.image %>" alt="slide 1">
+											</div>
+										</div>
+									</div>
+									<% END %>
+								</div>
+								<a class="carousel-control-prev" href="#carouselExample" role="button" data-slide="prev">
+									<span class="carousel-control-prev-icon fas fa-angle-left" style="color:#ff7525;" aria-hidden="true"></span>
+									<span class="sr-only">Previous</span>
+								</a>
+								<a class="carousel-control-next text-faded" href="#carouselExample" role="button" data-slide="next">
+									<span class="carousel-control-next-icon fas fa-angle-right" style="color:#ff7525;" aria-hidden="true"></span>
+									<span class="sr-only">Next</span>
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-lg-6 col-12 p-0">
+					<h5><% product.name %></h5>
+					<label>Categoría: <a href="/SC/Category/<% product.url %>" ><% product.category %></a></label>
+					<br>
+					<label>Marca:<% IF product.brand_image  %><img src="/data/img/<% product.brand_image %>" style="max-height: 50px;"></img><% ELSE %><% product.brand %><% END %></label>
+					<div class="card p-3">
+						<label>Detalle:</label>
+						<% product.details %>
+					</div> 
+				</div>
+				<div class="col-12 pb-5 pt-2 px-2 my-2 card">
+					<label >Descripción:</label>
+					<% product.description%>
+				</div>
+				<% IF relacionados.size > 0 %>
+				<div class="col-12 py-4 card">
+					<label>Productos relacionados (<% relacionados.size %>)</label>
+					<div class="row justify-content-start">
+						<% FOREACH relacionado = relacionados %>
+							<a class="col-lg-2 col-3 p-1" href="/SC/Product/<% relacionado.code %>">
+								<div class="card p-2">
+									<img src="/data/img/<% relacionado.image %>" class="img-fluid">
+									<label><% relacionado.name %></label>
+								</div>
+							</a>
+						<% END %>
+					</div>
+				</div>
+				<% END %>
+			</div>
+		</div>
+		<% END %>
+	</div>
+</div>
+<script type="text/javascript">
+	function cambiaimagen(valor) {
+		document.getElementById('img_zoom').style.backgroundImage='url("/data/img/'+valor+'")'
+	}
+
+	function maximizar() {
+		var max = document.getElementById('maximo')
+		if(max.className == "col-12 maximo inactivo"){
+			max.className = "col-12 maximo activo"
+			document.getElementById('imagen').style.backgroundImage=document.getElementById('img_zoom').style.backgroundImage
+		}else{
+			max.className = "col-12 maximo inactivo"
+		}
+	}
+</script>
+<script>
+	
+
+	(function() {
+		var zoomBoxes = document.querySelectorAll('.detail-view');
+		zoomBoxes.forEach(function(image) {
+			var imageCss = window.getComputedStyle(image, false),
+			imageUrl = imageCss.backgroundImage.slice(4, -1).replace(/['"]/g, '');
+			var imageSrc = new Image();
+			imageSrc.onload = function() {
+				var imageWidth = imageSrc.naturalWidth,
+				imageHeight = imageSrc.naturalHeight,
+				ratio = imageHeight / imageWidth;
+
+				var percentage = ratio * 100 + '%';
+				image.style.paddingBottom = percentage;
+
+				image.onmousemove = function(e) {
+					var boxWidth = image.clientWidth,
+					x = e.layerX - this.offsetLeft,
+					y = e.layerY - this.offsetTop,
+					xPercent = x / (boxWidth / 100) + '%',
+					yPercent = y / (boxWidth * ratio / 100) + '%';
+
+					Object.assign(image.style, {
+						backgroundPosition: xPercent + ' ' + yPercent,
+						backgroundSize: (imageWidth*2) + 'px'
+					});
+				};
+
+				image.onmouseleave = function(e) {
+					Object.assign(image.style, {
+						backgroundPosition: 'center',
+						backgroundSize: 'contain'
+					});
+				};
+			}
+			imageSrc.src = imageUrl;
+		});
+	})();
+</script>

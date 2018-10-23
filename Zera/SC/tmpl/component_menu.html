@@ -1,0 +1,13 @@
+<% FOREACH category = categories %>
+	<% IF category.childs.size %>
+		<a class="dropdown-item text-left sub-link" href="#" id="navbarDropdowns" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><% category.name %><i class=" pl-2 fas fa-angle-down"></i></a>
+		<div class="menubajochild dropdown-menu" aria-labelledby="navbarDropdowns">
+				<a class="dropdown-item text-left sub-link pl-5" href="/SC/Category/<% category.url %>"><% category.name %></a>
+			<% FOREACH child = category.childs %>
+				<a class="dropdown-item text-left sub-link pl-5" href="/SC/Category/<% child.url %>"><% child.name %></a>
+			<% END %>
+		</div>
+	<% ELSE %>
+		<a class="dropdown-item text-left sub-link" href="/SC/Category/<% category.url %>"><% category.name %></a>
+	<% END %>
+<% END %>
