@@ -77,13 +77,13 @@
 				</div>
 				<div class="col-lg-6 col-12 p-0">
 					<h5><% product.name %></h5>
-					<label>Categoría: <a href="/SC/Category/<% product.url %>" ><% product.category %></a></label>
+					<label>Categoría: <a href="/SC/Category/<% product.url_key %>" ><% product.category %></a></label>
 					<br>
 					<label>Marca:<% IF product.brand_image  %><img src="/data/img/<% product.brand_image %>" style="max-height: 50px;"></img><% ELSE %><% product.brand %><% END %></label>
 					<div class="card p-3">
 						<label>Detalle:</label>
 						<% product.details %>
-					</div> 
+					</div>
 				</div>
 				<div class="col-12 pb-5 pt-2 px-2 my-2 card">
 					<label >Descripción:</label>
@@ -125,8 +125,6 @@
 	}
 </script>
 <script>
-	
-
 	(function() {
 		var zoomBoxes = document.querySelectorAll('.detail-view');
 		zoomBoxes.forEach(function(image) {
