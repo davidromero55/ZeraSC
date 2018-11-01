@@ -13,10 +13,10 @@ sub display_home {
 sub display_product {
     my $self = shift;
     $self->param('code',$self->param('SubView')) if(!(defined $self->param('code')));
-    my $id = $self->selectrow_hashref("SELECT product_id FROM sc_products WHERE code = ?", {Slice=>{}}, $self->param('code'));
-    my $product = $self->selectall_arrayref("SELECT p.product_id, p.code, p.name, p.details, p.description, p.image, c.category_id, c.url, c.name as category, b.brand_id, b.name as brand, b.image as brand_image FROM sc_products p inner join sc_products_to_categories pc on pc.product_id = p.product_id inner join sc_categories c on pc.category_id = c.category_id inner join sc_brands b on p.brand_id = b.brand_id where p.code = ?",{Slice=>{}}, $self->param('code'));
-    my $galery = $self->selectall_arrayref("select image from sc_products_images where product_id = (select product_id from  sc_products where code = ?)",{Slice=>{}}, $self->param('code'));
-    my $principal = $self->selectall_arrayref("select image from sc_products  where code = ?",{Slice=>{}}, $self->param('code'));
+    my $id = $self->selectrow_hashref("SELECT product_id, code FROM sc_products WHERE code = ?", {Slice=>{}}, $self->param('SubView'));
+    my $product = $self->selectall_arrayref("SELECT p.product_id, p.code, p.name, p.details, p.description, p.image, c.category_id, c.url_key, c.name as category FROM sc_products p inner join sc_products_to_categories pc on pc.product_id = p.product_id inner join sc_categories c on pc.category_id = c.category_id where p.code = ?",{Slice=>{}}, $self->param('SubView'));
+    my $galery = $self->selectall_arrayref("select image from sc_products_images where product_id = (select product_id from  sc_products where code = ?)",{Slice=>{}}, $id->{code});
+    my $principal = $self->selectall_arrayref("select image from sc_products  where code = ?",{Slice=>{}}, $id->{code});
     my $related = $self->selectall_arrayref("select p.product_id, p.code, lower(p.name) as name, p.image from sc_products p where p.product_id in (select rp.product_related_id from sc_related_product rp where rp.product_id = ?)",{Slice=>{}}, $id->{product_id});
     my $vars = {
         products => $product,
@@ -29,7 +29,7 @@ sub display_product {
 
 sub display_result {
     my $self = shift;
-    
+
     my $entry = $self->selectall_arrayref("SELECT p.product_id, p.code, p.name, p.description, p.image FROM sc_products p  WHERE p.name LIKE ? ", {Slice=>{}}, '%'.$self->param('zl_q').'%');
 
     my $vars = {
@@ -41,14 +41,14 @@ sub display_result {
 sub display_category {
     my $self = shift;
     $self->param('url',$self->param('SubView')) if(!(defined $self->param('url')));
-    my $id = $self->selectrow_hashref("SELECT category_id FROM sc_categories WHERE url = ?", {Slice=>{}}, $self->param('url'));
-    my $childs = $self->selectall_arrayref("SELECT category_id, url, lower(name) as name, image from sc_categories where parent_id = ? ", {Slice=>{}}, $id->{category_id});
-    my $entry = $self->selectall_arrayref("SELECT p.product_id, p.code, p.name, p.description, p.image, b.name as marca FROM sc_products_to_categories pc INNER JOIN sc_products p on p.product_id = pc.product_id INNER JOIN sc_brands b on b.brand_id = p.brand_id WHERE pc.category_id = ? ", {Slice=>{}}, $id->{category_id});
+    my $id = $self->selectrow_hashref("SELECT category_id, name FROM sc_categories WHERE url_key = ?", {Slice=>{}}, $self->param('SubView'));
+    my $childs = $self->selectall_arrayref("SELECT category_id, url_key, lower(name) as name, image from sc_categories where parent_id = ? ", {Slice=>{}}, $id->{category_id});
+    my $entry = $self->selectall_arrayref("SELECT p.product_id,p.sale_unit, p.code, p.name, p.description, p.image FROM sc_products_to_categories pc INNER JOIN sc_products p on p.product_id = pc.product_id WHERE pc.category_id = ? ", {Slice=>{}}, $id->{category_id});
 
     my $vars = {
         entradas => $entry,
         hijos => $childs,
-        id => $id->{category_id},
+        id => $id,
         url =>$self->param('url'),
     };
     return $self->render_template($vars);

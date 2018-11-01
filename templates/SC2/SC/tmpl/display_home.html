@@ -1,0 +1,34 @@
+<% msg %>
+<% list %>
+
+<div class="container py-5 my-5">
+  <div class="row py-4">
+    <div class="col-3 efectomarco">
+      <img src="data/img/toys/0029_6.jpg" alt="" class="img-fluid">
+    </div>
+    <div class="col-6">
+      <div class="row py-4">
+        <% Zera.get_component('SC', 'carousel') %>
+      </div>
+    </div>
+    <div class="col-3 efectomarco">
+      <img src="data/img/toys/0029_5.jpg" alt="" class="img-fluid">
+    </div>
+  </div>
+  <div class="row py-4 my-4">
+    <% Zera.get_component('SC', 'categorypromo') %>
+  </div>
+  <div class="row py-4">
+    <div class="col-12 my-3 titulo-sub" >
+      <h2>Nuevos Productos</h2>
+    </div>
+    <% Zera.get_component('SC', 'newproducts') %>
+  </div>
+  <div class="row py-4">
+    <div class="col-12 my-3 titulo-sub" >
+      <h2>Categorias</h2>
+    </div>
+    <% Zera.get_component('SC', 'category') %>
+    </div>
+  </div>
+</div>

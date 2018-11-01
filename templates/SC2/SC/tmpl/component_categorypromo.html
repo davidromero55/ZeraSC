@@ -1,0 +1,10 @@
+<% FOREACH category =categories %>
+  <div class="col-4 p-3 efectomarco">
+    <div class="texto py-4 px-4">
+      <div class="bold centro my-2">Conoce</div>
+      <div class="slim arriba my-2"><% category.name %></div>
+      <div class="boton abajo py-3 px-5"> VER TODAS</div>
+    </div>
+    <img src="data/img/<% category.image %>" alt="" class="img-fluid" >
+  </div>
+<% END %>

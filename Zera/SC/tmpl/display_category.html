@@ -2,12 +2,12 @@
 	<div class="row justify-content-center  my-5 py-5">
 		<% IF hijos.size > 0 %>
 			<% FOREACH hijo = hijos %>
-				<a class="col-lg-3 col-12" href="/SC/Category/<% hijo.url_key %>">
+				<a class="col-lg-3 col-12" href="/SC/Category/<% hijo.url %>">
 					<div class="card text-center p-3 ">
 					<h4 style="text-decoration: none; text-transform: capitalize; color: #595959;">
 						<% hijo.name %>
 					</h4>
-					<img src="/data/img/<% hijo.image %>" class="img-fluid">
+					<img src="/data/img/<% hijo.image %>" class="img-fluid">	
 					</div>
 				</a>
 			<% END %>

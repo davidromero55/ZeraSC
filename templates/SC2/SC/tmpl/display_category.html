@@ -1,0 +1,39 @@
+<div class="container">
+	<div class="row justify-content-center  my-5 py-5">
+		<% IF hijos.size > 0 %>
+			<% FOREACH hijo = hijos %>
+				<a class="col-lg-3 col-12" href="/SC/Category/<% hijo.url %>">
+					<div class="card text-center p-3 ">
+					<h4 style="text-decoration: none; text-transform: capitalize; color: #595959;">
+						<% hijo.name %>
+					</h4>
+					<img src="/data/img/<% hijo.image %>" class="img-fluid">
+					</div>
+				</a>
+			<% END %>
+		<% ELSE %>
+			<div class="col-12 my-3 titulo-sub" >
+				<h2><% id.name %></h2>
+			</div>
+			<% FOREACH entrada = entradas %>
+			<div class="col-lg-3 col-6 py-3 px-2">
+			  <a href="/SC/Product/<% entrada.code %>">
+			    <div class="row newproducts justify-content-center">
+			      <div class="col-12 imagen-jugete" style="height:300px;">
+			        <img src="/data/img/toys/<% entrada.image %>" class="img-fluid">
+			      </div>
+			      <div class="detalle col-10">
+			        <div class="col-7 texto-12 py-2">
+			          <% entrada.name %>
+			        </div>
+			        <div class="col-5 texo-28 py-2">
+			          $<% entrada.sale_unit %>
+			        </div>
+			      </div>
+			    </div>
+			  </a>
+			</div>
+			<% END %>
+		<% END %>
+	</div>
+</div>

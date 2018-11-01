@@ -3,34 +3,41 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Electrica Lovi</title>
+	<title><% page.name %></title>
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous" />
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" />
-	<link rel="stylesheet" href="/templates/Lovi/estilo.css?0.07" />
-	<link rel="icon" 
-	type="image/icon" 
-	href="/data/img/favicon.ico" />
+	<!-- <link rel="stylesheet" href="/templates/SC2/estilo.css?0.02" /> -->
+	<link rel="stylesheet" href="estilo.css?0.04" />
+	<link rel="icon" type="image/icon" href="/data/img/favicon.ico" />
+	<script type="text/javascript">
+		function cambiaimagen(valor) {
+			document.getElementById('img_zoom').style.backgroundImage='url("img/toys/'+valor+'")'
+		}
+
+		function maximizar() {
+			var max = document.getElementById('maximo')
+			if(max.className == "col-12 maximo inactivo"){
+				max.className = "col-12 maximo activo"
+				document.getElementById('imagen').style.backgroundImage=document.getElementById('img_zoom').style.backgroundImage
+			}else{
+				max.className = "col-12 maximo inactivo"
+			}
+		}
+	</script>
 </head>
 <body>
 	<div class="container-fluid ">
-		<div class="row ofertasuperior justify-content-center primerContainer">
-			<div class="container">
-				<div class="row">
-					<% Zera.get_component('Banners','banner_top') %>
-				</div>
-			</div>
-		</div>
 		<div class="row" style="background: #fff;">
 			<div class="container py-2">
 				<div class="row">
 					<div class="col-lg-4 col-12">
 						<div class="row justify-content-lg-start justify-content-center">
-							<a href="http://www.lovi.webxaa.com">
-								<img src="/templates/Lovi/img/logo_2.png" class="img-fluid" style="max-height: 70px;">
+							<a href="/">
+								<img src="/templates/SC2/img/<% page.logo %>" class="img-fluid" style="max-height: 70px;">
 							</a>
 						</div>
 					</div>
-					
+
 					<div class="col-lg-4 col-12 busqueda">
 						<div class="row justify-content-center">
 							<% Zera.get_component('SC','buscar') %>
@@ -43,7 +50,7 @@
 								<span class="texto pt-2 ml-3">
 									<span style="font-size: 20px;color: #595959; font-weight: 300;">Llamanos</span>
 									<br>
-									<span style="color: #595959;">(625)582-4999</span>
+									<span style="color: #595959;"><% page.phone%></span>
 								</span>
 							</a>
 						</div>
@@ -52,7 +59,33 @@
 				</div>
 			</div>
 		</div>
-		
+		<style>
+
+		.image-container {
+			display: inline-block;
+			padding: 1em;
+			max-width: 100%;
+			min-width: 100%;
+			vertical-align: top;
+			width: -webkit-fit-content;
+			width: -moz-fit-content;
+			width: fit-content;
+		}
+
+		.image-container:hover {
+			background-color: transparent;
+		}
+
+		.image {
+			background-position: center;
+			background-repeat: no-repeat;
+			background-size: contain;
+			display: block;
+			max-width: 100%;
+			min-width: 100%;
+			padding-bottom: 10em;
+		}
+		</style>
 		<div class="row menu ">
 			<div class="container mx-lg-auto mx-0">
 				<div class="row justify-content-center menuboton">
@@ -83,17 +116,91 @@
 							</ul>
 						</div>
 					</nav>
-					
+
 				</div>
 			</div>
 		</div>
-		<% content %>
+		<!-- <% content %> -->
+		<div class="container py-5 my-5">
+			<div class="row">
+				<div class="col-12 py-5 my-5">
+					<div class="row">
+						<div class="col-lg-6 col-12">
+							<div class="row">
+								<div class="col-12">
+									<div class="icono_zoom" onclick="maximizar()"> <i class="fas fa-search centrado-porcentual"></i> </div>
+									<div class="image-container">
+										<div class="image detail-view" id="img_zoom" style="background-image: url(img/toys/2666_3.jpg);"></div>
+									</div>
+								</div>
+								<div class="col-12">
+									<div id="carouselExample" class="carousel slide" data-ride="carousel" data-interval="9000">
+										<div class="carousel-inner row w-75 mx-auto" role="listbox">
+											<div class="carousel-item col-md-3  active" onclick="cambiaimagen('2666_1.jpg')">
+												<div class="panel panel-default">
+													<div class="panel-thumbnail" >
+														<img class="img-fluid mx-auto d-block" src="img/toys/2666_1.jpg" alt="slide 1">
+													</div>
+												</div>
+											</div>
+											<div class="carousel-item col-md-3" onclick="cambiaimagen('2505_1.jpg')">
+												<div class="panel panel-default">
+													<div class="panel-thumbnail" >
+														<img class="img-fluid mx-auto d-block" src="img/toys/2505_1.jpg" alt="slide 1">
+													</div>
+												</div>
+											</div>
+										</div>
+										<a class="carousel-control-prev" href="#carouselExample" role="button" data-slide="prev">
+											<span class="carousel-control-prev-icon fas fa-angle-left" style="color:#ff7525;" aria-hidden="true"></span>
+											<span class="sr-only">Previous</span>
+										</a>
+										<a class="carousel-control-next text-faded" href="#carouselExample" role="button" data-slide="next">
+											<span class="carousel-control-next-icon fas fa-angle-right" style="color:#ff7525;" aria-hidden="true"></span>
+											<span class="sr-only">Next</span>
+										</a>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-6 col-12 p-0">
+							<h5>nombres</h5>
+							<label>Categoría: <a href="#" ></a></label>
+							<br>
+							<label>Marca <img src="img/toys/1900_2.jpg" style="max-height: 50px;"></img></label>
+							<div class="card p-3">
+								<label>Detalle:</label>
+
+							</div>
+						</div>
+						<div class="col-12 pb-5 pt-2 px-2 my-2 card">
+							<label >Descripción:</label>
+
+						</div>
+
+						<div class="col-12 py-4 card">
+							<label>Productos relacionados (1)</label>
+							<div class="row justify-content-start">
+
+									<a class="col-lg-2 col-3 p-1" href="#">
+										<div class="card p-2">
+											<img src="img/toys/1900_1.jpg" class="img-fluid">
+											<label>name</label>
+										</div>
+									</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- end content -->
 		<div class="row">
 			<div class="container">
 				<div class="row pt-4  pb-3 bordes mt-3 justify-content-between">
 					<div class="col-lg-2 col-12  text-left">
 						<a href="/">
-						<img src="/templates/Lovi/img/logo_2.png" class="img-fluid mb-lg-3 mb-1" style="max-height: 70px;">
+						<img src="/templates/SC2/img/<% page.logo %>" class="img-fluid mb-lg-3 mb-1" style="max-height: 70px;">
 						</a>
 					</div>
 					<div class="col-lg-8 col-12  text-left">
@@ -102,22 +209,22 @@
 								<div class=" titulos-foot mb-lg-3 mb-1 text-lg-center text-left">
 									<span style="font-size: 20px;color: #595959; font-weight: 500;" >Direccion</span>
 								</div>
-								<span style="font-size: 15px;color: #595959; font-weight: 300;">Ave. Rayón #1128<br>Centro, cd.Cuauhtémoc, Chih., Méx.</span>
+								<span style="font-size: 15px;color: #595959; font-weight: 300;"><% page.address %></span>
 							</div>
 							<div class="col-lg-4 col-12">
 								<div class=" titulos-foot mb-lg-3 mb-1 text-lg-center text-left">
 									<span style="font-size: 20px;color: #595959; font-weight: 500;" >Telefonos</span>
 								</div>
-								<span style="font-size: 15px;color: #595959; font-weight: 300;">(625)582-4999<br>(625)582-4820<br>(625)582-3239</span>
+								<span style="font-size: 15px;color: #595959; font-weight: 300;"><% page.phone %></span>
 							</div>
 							<div class="col-lg-4 col-12">
 								<div class=" titulos-foot mb-lg-3 mb-1 text-lg-center text-left">
 									<span style="font-size: 20px;color: #595959; font-weight: 500;" >Correo</span>
 								</div>
-								<span style="font-size: 15px;color: #595959; font-weight: 300;">adrianh@electricalovi.com</span>
+								<span style="font-size: 15px;color: #595959; font-weight: 300;"><% page.email %></span>
 							</div>
 						</div>
-						
+
 					</div>
 					<div class="col-lg-2 col-12  text-left">
 						<div class=" titulos-foot mb-lg-3 mb-1 text-lg-center text-left">
@@ -134,7 +241,7 @@
 				</div>
 				<div class="row pt-4  pb-3 bordes mt-3">
 					<div class="col-12 text-left">
-						<span style="font-size: 25px; color: #595959; font-weight: 300;"> Copyright © 2018 electricalovi.com</span>
+						<span style="font-size: 25px; color: #595959; font-weight: 300;"> <% page.copyright %></span>
 					</div>
 				</div>
 			</div>
@@ -147,4 +254,3 @@
 
 </body>
 </html>
-

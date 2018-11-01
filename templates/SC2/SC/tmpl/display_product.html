@@ -23,8 +23,11 @@
 	max-width: 100%;
 	min-width: 100%;
 	padding-bottom: 10em;
+
+
 }
 </style>
+<link rel="stylesheet" href="/templates/SC2/carousel.css?0.01" />
 <div class="container">
 	<div class="row">
 		<div class="col-12 maximo inactivo justify-content-center" id="maximo" onclick="maximizar()">
@@ -38,7 +41,7 @@
 						<div class="col-12">
 							<div class="icono_zoom" onclick="maximizar()"> <i class="fas fa-search centrado-porcentual"></i> </div>
 							<div class="image-container">
-								<div class="image detail-view" id="img_zoom" style="background-image: url(/data/img/<% product.image %>);"></div>
+								<div class="image detail-view" id="img_zoom" style="background-image: url(/data/img/toys/<% product.image %>);"></div>
 							</div>
 						</div>
 						<div class="col-12">
@@ -48,7 +51,7 @@
 									<div class="carousel-item col-md-3  active" onclick="cambiaimagen('<% prin.image %>')">
 										<div class="panel panel-default">
 											<div class="panel-thumbnail" >
-												<img class="img-fluid mx-auto d-block" src="/data/img/<% prin.image %>" alt="slide 1">
+												<img class="img-fluid mx-auto d-block" src="/data/img/toys/<% prin.image %>" alt="slide 1">
 											</div>
 										</div>
 									</div>
@@ -57,7 +60,7 @@
 									<div class="carousel-item col-md-3" onclick="cambiaimagen('<% imagen.image %>')">
 										<div class="panel panel-default">
 											<div class="panel-thumbnail" >
-												<img class="img-fluid mx-auto d-block" src="/data/img/<% imagen.image %>" alt="slide 1">
+												<img class="img-fluid mx-auto d-block" src="/data/img/toys/<% imagen.image %>" alt="slide 1">
 											</div>
 										</div>
 									</div>
@@ -78,12 +81,10 @@
 				<div class="col-lg-6 col-12 p-0">
 					<h5><% product.name %></h5>
 					<label>Categoría: <a href="/SC/Category/<% product.url %>" ><% product.category %></a></label>
-					<br>
-					<label>Marca:<% IF product.brand_image  %><img src="/data/img/<% product.brand_image %>" style="max-height: 50px;"></img><% ELSE %><% product.brand %><% END %></label>
 					<div class="card p-3">
 						<label>Detalle:</label>
 						<% product.details %>
-					</div> 
+					</div>
 				</div>
 				<div class="col-12 pb-5 pt-2 px-2 my-2 card">
 					<label >Descripción:</label>
@@ -111,7 +112,7 @@
 </div>
 <script type="text/javascript">
 	function cambiaimagen(valor) {
-		document.getElementById('img_zoom').style.backgroundImage='url("/data/img/'+valor+'")'
+		document.getElementById('img_zoom').style.backgroundImage='url("/data/img/toys/'+valor+'")'
 	}
 
 	function maximizar() {
@@ -125,7 +126,7 @@
 	}
 </script>
 <script>
-	
+
 
 	(function() {
 		var zoomBoxes = document.querySelectorAll('.detail-view');
@@ -141,25 +142,7 @@
 				var percentage = ratio * 100 + '%';
 				image.style.paddingBottom = percentage;
 
-				image.onmousemove = function(e) {
-					var boxWidth = image.clientWidth,
-					x = e.layerX - this.offsetLeft,
-					y = e.layerY - this.offsetTop,
-					xPercent = x / (boxWidth / 100) + '%',
-					yPercent = y / (boxWidth * ratio / 100) + '%';
 
-					Object.assign(image.style, {
-						backgroundPosition: xPercent + ' ' + yPercent,
-						backgroundSize: (imageWidth*2) + 'px'
-					});
-				};
-
-				image.onmouseleave = function(e) {
-					Object.assign(image.style, {
-						backgroundPosition: 'center',
-						backgroundSize: 'contain'
-					});
-				};
 			}
 			imageSrc.src = imageUrl;
 		});
