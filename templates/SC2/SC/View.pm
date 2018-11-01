@@ -14,7 +14,7 @@ sub display_product {
     my $self = shift;
     $self->param('code',$self->param('SubView')) if(!(defined $self->param('code')));
     my $id = $self->selectrow_hashref("SELECT product_id, code FROM sc_products WHERE code = ?", {Slice=>{}}, $self->param('SubView'));
-    my $product = $self->selectall_arrayref("SELECT p.product_id, p.code, p.name, p.details, p.description, p.image, c.category_id, c.url_key, c.name as category FROM sc_products p inner join sc_products_to_categories pc on pc.product_id = p.product_id inner join sc_categories c on pc.category_id = c.category_id where p.code = ?",{Slice=>{}}, $self->param('SubView'));
+    my $product = $self->selectall_arrayref("SELECT p.product_id, p.code, p.name, p.details, p.description, p.image, c.category_id, c.url_key, c.name as category, p.sale_unit FROM sc_products p inner join sc_products_to_categories pc on pc.product_id = p.product_id inner join sc_categories c on pc.category_id = c.category_id where p.code = ?",{Slice=>{}}, $self->param('SubView'));
     my $galery = $self->selectall_arrayref("select image from sc_products_images where product_id = (select product_id from  sc_products where code = ?)",{Slice=>{}}, $id->{code});
     my $principal = $self->selectall_arrayref("select image from sc_products  where code = ?",{Slice=>{}}, $id->{code});
     my $related = $self->selectall_arrayref("select p.product_id, p.code, lower(p.name) as name, p.image from sc_products p where p.product_id in (select rp.product_related_id from sc_related_product rp where rp.product_id = ?)",{Slice=>{}}, $id->{product_id});
@@ -98,6 +98,10 @@ sub display_groups {
 }
 
 sub display_quienes{
+    my $self = shift;
+    return  $self->render_template();
+}
+sub display_contactanos{
     my $self = shift;
     return  $self->render_template();
 }

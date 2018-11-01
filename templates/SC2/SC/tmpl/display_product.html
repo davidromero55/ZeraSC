@@ -36,6 +36,10 @@
 		<% FOREACH product = products %>
 		<div class="col-12 py-5 my-5">
 			<div class="row">
+				<div class="col-12 my-3 pb-4 titulo-sub" >
+		      <h2><% product.name %></h2>
+		    </div>
+
 				<div class="col-lg-6 col-12">
 					<div class="row">
 						<div class="col-12">
@@ -67,11 +71,11 @@
 									<% END %>
 								</div>
 								<a class="carousel-control-prev" href="#carouselExample" role="button" data-slide="prev">
-									<span class="carousel-control-prev-icon fas fa-angle-left" style="color:#ff7525;" aria-hidden="true"></span>
+									<span class="carousel-control-prev-icon fas fa-angle-left" style="color:rgb(2,68,89);" aria-hidden="true"></span>
 									<span class="sr-only">Previous</span>
 								</a>
 								<a class="carousel-control-next text-faded" href="#carouselExample" role="button" data-slide="next">
-									<span class="carousel-control-next-icon fas fa-angle-right" style="color:#ff7525;" aria-hidden="true"></span>
+									<span class="carousel-control-next-icon fas fa-angle-right" style="color:rgb(2,68,89);" aria-hidden="true"></span>
 									<span class="sr-only">Next</span>
 								</a>
 							</div>
@@ -79,14 +83,16 @@
 					</div>
 				</div>
 				<div class="col-lg-6 col-12 p-0">
-					<h5><% product.name %></h5>
-					<label>Categoría: <a href="/SC/Category/<% product.url %>" ><% product.category %></a></label>
-					<div class="card p-3">
+					<div class="card p-3 mb-2">
+						<label>Categoría: <a href="/SC/Category/<% product.url %>" ><% product.category %></a></label>
+						<br/>
+						<label>Precio:<% product.sale_unit %></label>
+						<br/>
 						<label>Detalle:</label>
 						<% product.details %>
 					</div>
 				</div>
-				<div class="col-12 pb-5 pt-2 px-2 my-2 card">
+				<div class="col-12 pb-5 py-4 px-4 my-4 card">
 					<label >Descripción:</label>
 					<% product.description%>
 				</div>

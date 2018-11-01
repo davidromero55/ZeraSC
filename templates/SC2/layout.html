@@ -6,7 +6,7 @@
 	<title><% page.name %></title>
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous" />
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" />
-	<link rel="stylesheet" href="/templates/SC2/estilo.css?0.02" />
+	<link rel="stylesheet" href="/templates/SC2/estilo.css?0.03" />
 	<link rel="icon" type="image/icon" href="/data/img/favicon.ico" />
 </head>
 <body>
@@ -17,7 +17,7 @@
 					<div class="col-lg-6 col-12">
 						<div class="row justify-content-lg-start justify-content-center">
 							<a href="/">
-								<img src="/data/SC2/img/<% page.logo %>" class="img-fluid" style="max-height: 70px;">
+								<img src="/data/img/<% page.logo %>" class="img-fluid" style="max-height: 120px;">
 							</a>
 						</div>
 					</div>
@@ -55,6 +55,12 @@
 										<% Zera.get_component('SC','menu') %>
 									</div>
 								</li>
+								<li class="nav-item">
+										<a href="/quienes_somos" class="nav-link link">¿Quiénes Somos?</a>
+								</li>
+								<li class="nav-item">
+									<a href="/contactanos" class="nav-link link">Contáctanos</a>
+								</li>
 							</ul>
 						</div>
 					</nav>
@@ -66,23 +72,23 @@
 
 		<div class="row">
 			<div class="container">
-				<div class="row pt-4  pb-3 bordes mt-3 justify-content-between">
+				<div class="row pt-4  pb-3 border-blue mt-3 justify-content-between">
 					<div class="col-lg-2 col-12  text-left">
 						<a href="/">
-						<img src="/data/SC2/img/<% page.logo %>" class="img-fluid mb-lg-3 mb-1" style="max-height: 70px;">
+						<img src="/data/img/<% page.logo %>" class="img-fluid mb-lg-3 mb-1" style="max-height: 120px;">
 						</a>
 					</div>
 					<div class="col-lg-8 col-12  text-left">
 						<div class="row">
 							<div class="col-lg-4 col-12">
 								<div class=" titulos-foot mb-lg-3 mb-1 text-lg-center text-left">
-									<span style="font-size: 20px;color: #595959; font-weight: 500;" >Direccion</span>
+									<span style="font-size: 20px;color: #595959; font-weight: 500;" >Dirección</span>
 								</div>
 								<span style="font-size: 15px;color: #595959; font-weight: 300;"><% page.address %></span>
 							</div>
 							<div class="col-lg-4 col-12">
 								<div class=" titulos-foot mb-lg-3 mb-1 text-lg-center text-left">
-									<span style="font-size: 20px;color: #595959; font-weight: 500;" >Telefonos</span>
+									<span style="font-size: 20px;color: #595959; font-weight: 500;" >Teléfonos</span>
 								</div>
 								<span style="font-size: 15px;color: #595959; font-weight: 300;"><% page.phone %></span>
 							</div>
@@ -99,13 +105,6 @@
 						<div class=" titulos-foot mb-lg-3 mb-1 text-lg-center text-left">
 							<span style="font-size: 20px;color: #595959; font-weight: 500;" >Nosotros</span>
 						</div>
-						<a class="nav-link linkfoot px-0 py-0" href="#" id="navbarDropdowns" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span style="font-size: 15px;color: #595959; font-weight: 300;">Catálogo</span><i class=" pl-2 fas fa-angle-down"></i></a>
-						<div class=" dropdown-menu footmenu" aria-labelledby="navbarDropdowns">
-							<% Zera.get_component('SC','footer') %>
-						</div>
-						<a href="/quienes_somos"><span style="font-size: 15px;color: #595959; font-weight: 300; text-decoration: none;">¿Quiénes Somos?</span></a>
-						<br>
-						<a href="/contactanos"><span style="font-size: 15px;color: #595959; font-weight: 300;">Contáctanos</span></a>
 					</div>
 				</div>
 				<div class="row pt-4  pb-3 bordes mt-3">
