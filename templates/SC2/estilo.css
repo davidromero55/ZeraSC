@@ -439,7 +439,6 @@ button.home:hover{
 .menu{
 	background: rgba(2,68,89,1);
 	position: inherit;
-	width: 100%;
 	z-index: 4;
 
 }
